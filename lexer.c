@@ -1,43 +1,229 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <string.h>
+#include <ctype.h>
+#include "token.h"
 
-int fileLex(char *source_file_path) { // Read a file and iterate the buffer character by character
-    FILE *f;
-    char buff[4096];
+typedef struct {
+    const char* start; // Address of the initial character from the lexeme
+    const char* current; // Address of the current character
+} Scanner;
+
+Scanner scanner;
+
+// Return the string corresponding to the TokenType
+char* getTokenTypeString(int token_index) {
+    char *token_map[8] = {"KEYWORD", 
+                          "IDENTIFIER", 
+                          "PUNCTUATOR", 
+                          "OPERATOR", 
+                          "CONST",
+                          "LITERAL", 
+                          "END_OF_FILE",
+                          "NOT_A_TOKEN"};
+    return token_map[token_index];
+}
+
+// Initialize the scanner
+void initScanner(const char* source_code) {
+    scanner.start = source_code;
+    scanner.current = source_code;
+}
+
+// Return a token of the given type
+token createToken(TokenType type) {
+    token t;
+    t.type = type;
     
-    f = fopen(source_file_path, "r");
+    int len = (int)(scanner.current - scanner.start); // Calculate the length of the lexeme
+    char* lexeme = (char*)malloc(len + 1);
+    strncpy(lexeme, scanner.start, len); // Copy the lexeme
+    lexeme[len] = '\0'; // Add the end of string character
+    
+    t.lexeme = lexeme;
+    return t;
+}
 
+// Return a boolean if the lexeme match with the given string
+bool matchStr(const char *start, int len, const char *str) {
+    // Verify based on the length
+    if (strlen(str) != len) {
+        return false;
+    }
+    
+    return memcmp(start, str, len) == 0;
+}
+
+// Return a TokenType: KEYWORD or a IDENTIFIER
+TokenType lookupKeyword(const char *start, const char *end) {
+    int len = (int)(end - start);
+    
+    // Decide which keyword is
+    switch (start[0]) {
+        case 'a':
+            if (matchStr(start, len, "auto"))
+                return KEYWORD;
+            break;
+        case 'b':
+            if (matchStr(start, len, "break"))
+                return KEYWORD;
+            break;
+        case 'c':
+            if (matchStr(start, len, "case") ||
+                matchStr(start, len, "char") ||
+                matchStr(start, len, "const") ||
+                matchStr(start, len, "continue"))
+                return KEYWORD;
+            break;
+        case 'd':
+            if (matchStr(start, len, "default") ||
+                matchStr(start, len, "do") ||
+                matchStr(start, len, "double"))
+                return KEYWORD;
+            break;
+        case 'e':
+            if (matchStr(start, len, "else") ||
+                matchStr(start, len, "enum") ||
+                matchStr(start, len, "extern"))
+                return KEYWORD;
+            break;
+        case 'f':
+            if (matchStr(start, len, "float") ||
+                matchStr(start, len, "for"))
+                return KEYWORD;
+            break;
+        case 'g':
+            if (matchStr(start, len, "goto"))
+                return KEYWORD;
+            break;
+        case 'i':
+            if (matchStr(start, len, "if") ||
+                matchStr(start, len, "int"))
+                return KEYWORD;
+            break;
+        case 'l':
+            if (matchStr(start, len, "long"))
+                return KEYWORD;
+            break;
+        case 'r':
+            if (matchStr(start, len, "register") ||
+                matchStr(start, len, "return"))
+                return KEYWORD;
+            break;
+        case 's':
+            if (matchStr(start, len, "short") ||
+                matchStr(start, len, "signed") ||
+                matchStr(start, len, "sizeof") ||
+                matchStr(start, len, "static") ||
+                matchStr(start, len, "struct") ||
+                matchStr(start, len, "switch"))
+                return KEYWORD;
+            break;
+        case 't':
+            if (matchStr(start, len, "typedef"))
+                return KEYWORD;
+            break;
+        case 'u':
+            if (matchStr(start, len, "union") ||
+                matchStr(start, len, "unsigned"))
+                return KEYWORD;
+            break;
+        case 'v':
+            if (matchStr(start, len, "void") ||
+                matchStr(start, len, "volatile"))
+                return KEYWORD;
+            break;
+        case 'w':
+            if (matchStr(start, len, "while"))
+                return KEYWORD;
+            break;
+    }
+
+    // If is not a keyword, is an identifier
+    return IDENTIFIER;
+}
+
+token classifyToken() {
+    // Skiping whitespaces and linebreak;
+    while (*scanner.current == ' ' || *scanner.current == '\n') {
+        scanner.current++; 
+    }
+
+    scanner.start = scanner.current;
+
+    // Detects the EOF
+    if (*scanner.current == '\0') {
+        token t = createToken(END_OF_FILE);
+        return t;
+    }
+
+    char c = *scanner.start; // Store the first character
+    scanner.current++;
+
+    // KEYWORDS and IDENTIFIERS
+    if (isalpha(c) || c == '_') { // If match with the initial char of a keyword o identifier
+        while (isalnum(*scanner.current) || *scanner.current == '_') { // Traverse the lexeme
+            scanner.current++;
+        }
+
+        TokenType type = lookupKeyword(scanner.start, scanner.current);
+        return createToken(type);
+    }
+
+    // Unclassified lexeme
+    return createToken(NOT_A_TOKEN);
+}
+
+// Check every token in the file
+void lexer(char *source) {
+    initScanner(source);
+    printf("--- INICIO DE TOKENS ---\n");
+
+    // While the current character is not the EOF
+    while (*scanner.current != '\0') {
+        token t = classifyToken();
+        
+        // If the EOF is reached
+         if (t.type == END_OF_FILE) {
+             free(t.lexeme); // Free the last lexeme
+             break;
+         } else
+            printf("%s('%s')\n", getTokenTypeString(t.type), t.lexeme);
+
+        free(t.lexeme); // Free each lexeme
+    }
+
+    printf("--- FIN DE TOKENS ---\n");
+}
+
+// Read an entire file and return the content as a string
+char* readFile(const char* source_file_path) {
+    FILE *f = fopen(source_file_path, "rb");
     if (!f) {
-        printf("ERROR: The file `%s` doesn't exists.\n", source_file_path); return 1;
+        printf("ERROR: The file `%s` doesn't exists.\n", source_file_path); 
+        exit(74);
     }
-     
-    while (fread(buff, sizeof(char), 4096, f)) {
-        printf("%s", buff);
-        //TODO: check which type of token is.
-    }
+
+    // Find the file lenght
+    fseek(f, 0L, SEEK_END);
+    size_t fileSize = ftell(f);
+    rewind(f);
+
+    // Allocate the memory for the file content
+    char* buffer = (char*)malloc(fileSize);
+    size_t bytesRead = fread(buffer, sizeof(char), fileSize, f);
 
     fclose(f);
-    return 0;
+    return buffer;
 }
 
-int strLex(char *source_str) { // Iterate a string character by character
-    int len = strlen(source_str);
-    char *HLL_code = (char *)malloc(len * sizeof(char));
-    strcpy(HLL_code, source_str);
-
-    for (int i=0; i<len; i++) {
-        printf("%c", HLL_code[i]);
-        //TODO: check which type of token is.
-    }
-
-    return 0;
-}
-
-// Arguments: [source_file_path] | [-s source_str]
-// Examples of execution:
-// ./test main.c
-// ./test -s 'printf("Hello World!");'
+/* 
+    Arguments: [source_file_path] | [-s source_str]
+    Examples of execution:
+    ./test main.c
+    ./test -s 'printf("Hello World!");'
+*/
 int main(int argc, char *argv[]) {
     if (argc < 2) {
         printf("ERROR: Please specify a file or a string to analize.");
@@ -45,9 +231,13 @@ int main(int argc, char *argv[]) {
     }
 
     if (argc == 2) { // A source file path is received
-        fileLex(argv[1]); // Lexer applied to a file
+        char *HLL_code = readFile(argv[1]);
+        lexer(HLL_code);
     } else if (argc == 3 && strcmp(argv[1], "-s") == 0) { // A string is received
-        strLex(argv[2]); // Lexer applied to a string
+        int len = strlen(argv[2]);
+        char *HLL_code = (char *)malloc(len * sizeof(char));
+        strcpy(HLL_code, argv[2]);
+        lexer(HLL_code);
     }
 
     return 0;
