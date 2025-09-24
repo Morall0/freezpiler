@@ -145,11 +145,13 @@ TokenType lookupKeyword(const char *start, const char *end) {
 }
 
 token classifyToken() {
-    // Skiping whitespaces and linebreak;
+    // Skipping whitespaces and linebreak;
     while (*scanner.current == ' ' || *scanner.current == '\n') {
         scanner.current++; 
     }
+    //Skip
 
+    
     scanner.start = scanner.current;
 
     // Detects the EOF
@@ -160,13 +162,20 @@ token classifyToken() {
 
     char c = *scanner.start; // Store the first character
     scanner.current++;
-
+    //LITERALS
+    if(c == '"'){
+        while(*scanner.current != '"'){
+            scanner.current++;
+        }
+        scanner.current++;
+        return createToken(LITERAL);
+    }
+    
     // KEYWORDS and IDENTIFIERS
     if (isalpha(c) || c == '_') { // If match with the initial char of a keyword o identifier
         while (isalnum(*scanner.current) || *scanner.current == '_') { // Traverse the lexeme
             scanner.current++;
         }
-
         TokenType type = lookupKeyword(scanner.start, scanner.current);
         return createToken(type);
     }
