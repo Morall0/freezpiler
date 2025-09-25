@@ -165,6 +165,7 @@ TokenType lookupPunctuator(const char *c)
     case ';':
     case ',':
     case ':':
+    case '?':
         type = PUNCTUATOR;
         break;
     // OPERATORS applying lookeaheads
@@ -330,24 +331,15 @@ token classifyToken()
         {
             if (*scanner.current == '.')
             {
-                if (dot_consumed == 0 && e_consumed == 0)
-                    dot_consumed = 1;
-                if (dot_consumed == 0 && e_consumed != 0)
-                    dot_consumed = 2;
-                else
+                dot_consumed++;
+                if(e_consumed != 0)
                     dot_consumed++;
+                
             }
 
             if (*scanner.current == 'e' || *scanner.current == 'E')
             {
-                if (e_consumed == 0)
-                {
-                    e_consumed = 1;
-                }
-                else
-                {
-                    e_consumed++;
-                }
+                e_consumed++;
 
                 if (*(scanner.current + 1) == '+' || *(scanner.current + 1) == '-')
                 {
