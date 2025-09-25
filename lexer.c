@@ -176,27 +176,27 @@ int isOperator(const char *op)
     }
 }
 
-int isDoubleOperator(const char *op, const char *end)
+int isDoubleOperator(const char *start, const char *end)
 {
-    int len = (int)(*end - *op);
-    if (matchStr(op, len, "++") ||
-        matchStr(op, len, "--") ||
-        matchStr(op, len, "==") ||
-        matchStr(op, len, "!=") ||
-        matchStr(op, len, "<=") ||
-        matchStr(op, len, ">=") ||
-        matchStr(op, len, "&&") ||
-        matchStr(op, len, "||") ||
-        matchStr(op, len, "+=") ||
-        matchStr(op, len, "-=") ||
-        matchStr(op, len, "*=") ||
-        matchStr(op, len, "/=") ||
-        matchStr(op, len, "&=") ||
-        matchStr(op, len, "%=") ||
-        matchStr(op, len, "|=") ||
-        matchStr(op, len, "^=") ||
-        matchStr(op, len, "<<") ||
-        matchStr(op, len, ">>"))
+    int len = (int)(end - start);
+    if (matchStr(start, len, "++") ||
+        matchStr(start, len, "--") ||
+        matchStr(start, len, "==") ||
+        matchStr(start, len, "!=") ||
+        matchStr(start, len, "<=") ||
+        matchStr(start, len, ">=") ||
+        matchStr(start, len, "&&") ||
+        matchStr(start, len, "||") ||
+        matchStr(start, len, "+=") ||
+        matchStr(start, len, "-=") ||
+        matchStr(start, len, "*=") ||
+        matchStr(start, len, "/=") ||
+        matchStr(start, len, "&=") ||
+        matchStr(start, len, "%=") ||
+        matchStr(start, len, "|=") ||
+        matchStr(start, len, "^=") ||
+        matchStr(start, len, "<<") ||
+        matchStr(start, len, ">>"))
     {
         return 1;
     }
