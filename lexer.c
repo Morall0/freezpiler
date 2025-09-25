@@ -332,12 +332,6 @@ token classifyToken()
             {
                 if (dot_consumed == 0 && e_consumed == 0)
                     dot_consumed = 1;
-                else
-                {
-                    while (isdigit(*scanner.current) || *scanner.current == '.' || *scanner.current == 'e' || *scanner.current == 'E')
-                        scanner.current++;
-                    return createToken(NOT_A_TOKEN);
-                }
             }
 
             if (*scanner.current == 'e' || *scanner.current == 'E')
@@ -351,15 +345,11 @@ token classifyToken()
                         scanner.current++;
                     }
                 }
-                else
-                {
-                    while (isdigit(*scanner.current) || *scanner.current == '.' || *scanner.current == 'e' || *scanner.current == 'E')
-                        scanner.current++;
-                    return createToken(NOT_A_TOKEN);
-                }
             }
             scanner.current++;
         }
+        if(e_consumed > 1 || dot_consumed >1)
+            return createToken(NOT_A_TOKEN);
         return createToken(CONSTANT);
     }
 
