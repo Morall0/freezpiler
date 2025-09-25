@@ -285,11 +285,11 @@ token classifyToken()
     else if (*scanner.current == '/' && *(scanner.current + 1) == '*')
     {
         scanner.current += 2; // jumps the /*
-        while (*scanner.current != '*' && *(scanner.current + 1) != '/')
+        while (!(*scanner.current == '*' && *(scanner.current + 1) == '/'))
         {
             scanner.current++;
         }
-        scanner.current += 2;
+        scanner.current += 2;//jumps the */
         return createToken(NOT_A_TOKEN);
     }
 
@@ -300,7 +300,7 @@ token classifyToken()
         return t;
     }
 
-    char c = *scanner.start; // Store the first character
+    char c = *scanner.start; // Stores the first character
     scanner.current++;
 
     // LITERALS
@@ -332,7 +332,7 @@ token classifyToken()
             if (*scanner.current == '.')
             {
                 dot_consumed++; //Deletion of extra logic helps to make easier to understand
-                //The flag now grows bigger and this let the scanner to get to the end of the string
+                //The flag now grows bigger and this lets the scanner to get to the end of the string
                 if(e_consumed != 0) //Checks if is there an 'e' already in the string
                 //If there is, now the flag will get out of bounds in cases like 1e1.2 
                     dot_consumed++;
@@ -357,7 +357,7 @@ token classifyToken()
 
     // KEYWORDS and IDENTIFIERS
     if (isalpha(c) || c == '_')
-    { // If match with the initial char of a keyword o identifier
+    { // If matches with the initial char of a keyword or identifier
         while (isalnum(*scanner.current) || *scanner.current == '_')
         { // Traverse the lexeme
             scanner.current++;
@@ -389,7 +389,7 @@ void lexer(char *source)
         token t = classifyToken();
 
         // If the EOF is reached
-        if (t.type == END_OF_FILE)
+        if (t.type == END_OF_FILE) //This is never reached,
         {
             free(t.lexeme); // Free the last lexeme
             break;
