@@ -144,13 +144,95 @@ TokenType lookupKeyword(const char *start, const char *end) {
     return IDENTIFIER;
 }
 
+TokenType lookupPunctuator(const char *c) {
+    TokenType type = NOT_A_TOKEN;
+    switch (c[0]) {
+        // PUNCTUATORS
+        case '(':
+        case ')':
+        case '{':
+        case '}':
+        case ';':
+        case ',':
+            type = PUNCTUATOR;
+            break;
+        // OPERATORS applying lookeaheads
+        case '=':
+            if (c[1] == '=')
+                scanner.current++;
+            type = OPERATOR;
+            break;
+        case '+':
+            if (c[1] == '+' || c[1] == '=')
+                scanner.current++;
+            type = OPERATOR;
+            break;
+        case '-':
+            if (c[1] == '-' || c[1] == '=')
+                scanner.current++;
+            type = OPERATOR;
+            break;
+        case '*':
+            if (c[1] == '=')
+                scanner.current++;
+            type = OPERATOR;
+            break;
+        case '/':
+            if (c[1] == '+' || c[1] == '=')
+                scanner.current++;
+            type = OPERATOR;
+            break;
+        case '%':
+            if (c[1] == '+' || c[1] == '=')
+                scanner.current++;
+            type = OPERATOR;
+            break;
+        case '&':
+            if (c[1] == '&' || c[1] == '=')
+                scanner.current++;
+            type = OPERATOR;
+            break;
+        case '|':
+            if (c[1] == '|' || c[1] == '=')
+                scanner.current++;
+            type = OPERATOR;
+            break;
+        case '!':
+            if (c[1] == '=')
+                scanner.current++;
+            type = OPERATOR;
+            break;
+        case '^':
+            if (c[1] == '=')
+                scanner.current++;
+            type = OPERATOR;
+            break;
+        case '~':
+            type = OPERATOR;
+            break;
+        case '<':
+            if (c[1] == '<' || c[1] == '=')
+                scanner.current++;
+                if (c[1] == '<' && c[2] == '=')
+                    scanner.current++;
+            type = OPERATOR;
+            break;
+        case '>':
+            if (c[1] == '>' || c[1] == '=')
+                scanner.current++;
+                if (c[1] == '>' && c[2] == '=')
+                    scanner.current++;
+            type = OPERATOR;
+            break;
+    }
+    return type;
+}
+
 token classifyToken() {
-    // Skipping whitespaces and linebreak;
+    // Skipping whitespaces and linebreak
     while (*scanner.current == ' ' || *scanner.current == '\n') {
         scanner.current++; 
     }
-    //Skip
-
     
     scanner.start = scanner.current;
 
@@ -162,7 +244,8 @@ token classifyToken() {
 
     char c = *scanner.start; // Store the first character
     scanner.current++;
-    //LITERALS
+
+    // LITERALS
     if(c == '"'){
         while(*scanner.current != '"'){
             scanner.current++;
@@ -179,6 +262,12 @@ token classifyToken() {
         TokenType type = lookupKeyword(scanner.start, scanner.current);
         return createToken(type);
     }
+    
+    // PUNCTUATORS and OPERATORS
+    if (!isalnum(c)) {
+        TokenType type = lookupPunctuator(scanner.start);
+        return createToken(type);
+    }
 
     // Unclassified lexeme
     return createToken(NOT_A_TOKEN);
@@ -187,7 +276,6 @@ token classifyToken() {
 // Check every token in the file
 void lexer(char *source) {
     initScanner(source);
-    printf("--- INICIO DE TOKENS ---\n");
 
     // While the current character is not the EOF
     while (*scanner.current != '\0') {
@@ -202,8 +290,6 @@ void lexer(char *source) {
 
         free(t.lexeme); // Free each lexeme
     }
-
-    printf("--- FIN DE TOKENS ---\n");
 }
 
 // Read an entire file and return the content as a string
