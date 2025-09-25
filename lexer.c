@@ -332,23 +332,31 @@ token classifyToken()
             {
                 if (dot_consumed == 0 && e_consumed == 0)
                     dot_consumed = 1;
+                if (dot_consumed == 0 && e_consumed != 0)
+                    dot_consumed = 2;
+                else
+                    dot_consumed++;
             }
 
             if (*scanner.current == 'e' || *scanner.current == 'E')
             {
                 if (e_consumed == 0)
                 {
-
                     e_consumed = 1;
-                    if (*(scanner.current + 1) == '+' || *(scanner.current + 1) == '-')
-                    {
-                        scanner.current++;
-                    }
+                }
+                else
+                {
+                    e_consumed++;
+                }
+
+                if (*(scanner.current + 1) == '+' || *(scanner.current + 1) == '-')
+                {
+                    scanner.current++;
                 }
             }
             scanner.current++;
         }
-        if(e_consumed > 1 || dot_consumed >1)
+        if (e_consumed > 1 || dot_consumed > 1)
             return createToken(NOT_A_TOKEN);
         return createToken(CONSTANT);
     }
