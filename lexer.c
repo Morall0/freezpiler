@@ -310,7 +310,7 @@ token classifyToken()
         {
             scanner.current++;
         }
-        scanner.current++;
+        scanner.current++; //gets the runaway "
         return createToken(LITERAL);
     }
     if (c == '\'')
@@ -319,7 +319,7 @@ token classifyToken()
         {
             scanner.current++;
         }
-        scanner.current++;
+        scanner.current++; //same as string, gets the runaway '
         return createToken(LITERAL);
     }
 
@@ -331,16 +331,18 @@ token classifyToken()
         {
             if (*scanner.current == '.')
             {
-                dot_consumed++;
-                if(e_consumed != 0)
+                dot_consumed++; //Deletion of extra logic helps to make easier to understand
+                //The flag now grows bigger and this let the scanner to get to the end of the string
+                if(e_consumed != 0) //Checks if is there an 'e' already in the string
+                //If there is, now the flag will get out of bounds in cases like 1e1.2 
                     dot_consumed++;
                 
             }
 
             if (*scanner.current == 'e' || *scanner.current == 'E')
             {
-                e_consumed++;
-
+                e_consumed++; //Same as the dot case
+                //Since the expression can have an explicit positive or negative, it will be jumped anyways
                 if (*(scanner.current + 1) == '+' || *(scanner.current + 1) == '-')
                 {
                     scanner.current++;
@@ -348,7 +350,7 @@ token classifyToken()
             }
             scanner.current++;
         }
-        if (e_consumed > 1 || dot_consumed > 1)
+        if (e_consumed > 1 || dot_consumed > 1) //Minimization of logic here
             return createToken(NOT_A_TOKEN);
         return createToken(CONSTANT);
     }
