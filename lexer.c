@@ -242,25 +242,23 @@ void skipWhitespaces() {
 
 token classifyToken() {
     skipWhitespaces();
+    scanner.start=scanner.current;
 
-    // TODO: skip consecutive macros and comments, not just the first
     // Skipping macros
-    // if (*scanner.current == '#') {
-    //     printf("MACROOOOOOOO");
-    //     while (*scanner.current != '\n')
-    //         scanner.current++;
-    //     skipWhitespaces();
-    // }
+    if (*scanner.current == '#') {
+        // printf("MACRO: ");
+        while (*scanner.current != '\n')
+            scanner.current++;
+        return createToken(NOT_A_TOKEN);
+    }
 
     // Skipping comments
-    // if (*scanner.current == '/' && *(scanner.current + 1) == '/') {
-    //     printf("COMENTARIOOOOOOO");
-    //     while (*scanner.current != '\n')
-    //         scanner.current++;
-    //     skipWhitespaces();
-    // }
-
-    scanner.start = scanner.current;
+    if (*scanner.current == '/' && *(scanner.current + 1) == '/') {
+        // printf("COMMENT: ");
+        while (*scanner.current != '\n')
+            scanner.current++;
+        return createToken(NOT_A_TOKEN);
+    }
 
     // Detects the EOF
     if (*scanner.current == '\0') {
@@ -349,12 +347,12 @@ void lexer(char *source) {
             break;
         } else if (t.type != NOT_A_TOKEN) {
             token_counter++;
+            printf("%s('%s')\n", getTokenTypeString(t.type), t.lexeme);
         }
-
-        printf("%s('%s')\n", getTokenTypeString(t.type), t.lexeme);
 
         free(t.lexeme); // Free each lexeme
     }
+    printf("\nTOTAL: %i\n", token_counter);
 }
 
 // Read an entire file and return the content as a string
