@@ -180,12 +180,8 @@ TokenType lookupPunctuator(const char *c)
         type = OPERATOR;
         break;
     case '-':
-        if (c[1] == '-' || c[1] == '=')
-        {
+        if (c[1] == '-' || c[1] == '=' || c[1] == '>')
             scanner.current++;
-            if (c[1] == '-' && c[2] == '>')
-                scanner.current++;
-        }
         type = OPERATOR;
         break;
     case '*':
