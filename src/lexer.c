@@ -425,10 +425,10 @@ char *readFile(const char *source_file_path)
 }
 
 /*
-    Arguments: [source_file_path] | [-s source_str]
+    Arguments: <source_file_path> | <-s source_str>
     Examples of execution:
-    ./test main.c
-    ./test -s 'printf("Hello World!");'
+    ./lexer path/to/program.c
+    ./lexer -s 'printf("Hello World!");'
 */
 int main(int argc, char *argv[])
 {
